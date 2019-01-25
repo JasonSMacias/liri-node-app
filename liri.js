@@ -70,9 +70,14 @@ if (typedCommand.toLowerCase()==="concert-this"){
 else if (typedCommand.toLowerCase()==="spotify-this-song"){
   const song = process.argv[3];
   spotify
-  .search({ type: 'track', query: song })
+  .search({ type: 'track', query: song, limit: 1 })
   .then(function(response) {
-    console.log(response);
+    console.log("\nHere is Spotify information for that song:\n");
+    console.log("Artist's name: " + response.tracks.items[0].artists[0].name);
+    console.log("Song title: " + response.tracks.items[0].name);
+    console.log("Spotify preview link: " + response.tracks.items[0].external_urls.spotify);
+    console.log("Album: " + response.tracks.items[0].album.name);
+    // console.log(response.tracks);
   })
   .catch(function(err) {
     console.log(err);
