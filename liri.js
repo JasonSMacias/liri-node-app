@@ -171,7 +171,7 @@ else if (typedCommand.toLowerCase()==="do-what-it-says"){
 }
 
 else {
-  console.log('please use one of these four valid arguments: "concert-this" "spotify-this-song" "movie-this" or "do-what-it-says" followed by your search term.');
+  console.log('please use one of these four valid arguments: "concert-this" "spotify-this-song" "movie-this" followed by your search term. Or enter "do-what-it-says" and see what happens');
 };
 
 };
