@@ -41,7 +41,7 @@ const mainFunction = function(){
 if (typedCommand.toLowerCase()==="concert-this"){
 
   // setting search url
-  const artist = cliInput[3];
+  const artist = cliInput.slice(3, cliInput.length).join(" ");
     if (!artist){
       console.log("Please enter a search term for concert-this.");
       process.exit(1);
@@ -59,7 +59,9 @@ if (typedCommand.toLowerCase()==="concert-this"){
     // Console logging this in case the search has no results
     if (!response.data[0]){
       console.log("None, they do not seem to have any tour dates.");
+      process.exit(1);
     };
+    
     for (i=0; i<response.data.length; i++){
     console.log(response.data[i].venue.name);
     console.log(response.data[i].venue.region);
@@ -67,6 +69,7 @@ if (typedCommand.toLowerCase()==="concert-this"){
     console.log(response.data[i].venue.city);
     console.log(moment(response.data[i].datetime).format('MM DD Y'));
     };
+
   }).catch(function(error){
     console.log(error);
   });
@@ -77,7 +80,7 @@ else if (typedCommand.toLowerCase()==="spotify-this-song"){
     let song = "sign ace of base";
     
   if (cliInput[3]){
-    song = cliInput[3];
+    song = cliInput.slice(3, cliInput.length).join(" ");
   };
   
   spotify
@@ -99,7 +102,7 @@ else if (typedCommand.toLowerCase()==="spotify-this-song"){
 else if (typedCommand.toLowerCase()==="movie-this"){
   let movie = "Mr. Nobody";
   if (process.argv[3]){
-  movie = process.argv[3];
+  movie = cliInput.slice(3, cliInput.length).join(" ");
   };
 
   const queryURL = `http://www.omdbapi.com/?apikey=${keys.omdb.key}&t=${movie}`;
@@ -154,17 +157,14 @@ else if (typedCommand.toLowerCase()==="do-what-it-says"){
   if (error) {
     return console.log(error);
   }
-
-  console.log(data);
+  // breaking up text from text file
   const dataArray = data.split(",");
-  console.log(dataArray);
-  typedCommandArray = ["filler", "filler"];
+  // setting this array with filler spots to represent first two indexes of process.argv, then pushing data from text file in at end
+  const typedCommandArray = ["filler", "filler"];
   typedCommandArray.push(dataArray[0], dataArray[1]);
-  console.log(typedCommandArray);
+  // re-setting global variables so main function can be run again with data from text file, then calling the main function
   typedCommand = typedCommandArray[2];
-  console.log(typedCommand);
   cliInput = typedCommandArray;
-  console.log(cliInput[3]);
   mainFunction();
 
 });
