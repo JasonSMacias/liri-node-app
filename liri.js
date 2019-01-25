@@ -15,14 +15,29 @@ const keys = require("./keys.js");
 
 // access keys information
 const spotify = new Spotify(keys.spotify);
+// const spotify = new Spotify({
+// id: keys.spotify.id,
+// secret: keys.spotify.secret
+// });
 
 // arguments command variable, this should produce a hyphen-separated variable if spaces are entered, or if hyphens are used(since it won't be split in that case)
 const typedCommand = process.argv[2];
 console.log(typedCommand+" is the typed command");
 
+// checking to see if someting was entered in command and search term arguments, if not let user know and exit.
+if (!process.argv[2]){
+  console.log("Please enter a command and a search term.");
+  process.exit(1);
+};
+
+if (!process.argv[3]){
+  console.log("Please enter a search term.");
+  process.exit(1);
+};
+
 // Concert this functionality
 if (typedCommand.toLowerCase()==="concert-this"){
- 
+
   // setting search url
   const artist = process.argv[3];
   console.log(artist);
@@ -34,6 +49,11 @@ if (typedCommand.toLowerCase()==="concert-this"){
   
   })
   .then(function(response) {
+    console.log("\nHere are performances listed for that artist\n");
+    // Console logging this in case the search has no results
+    if (!response.data[0]){
+      console.log("None, they do not seem to have any tour dates.");
+    };
     for (i=0; i<response.data.length; i++){
     console.log(response.data[i].venue.name);
     console.log(response.data[i].venue.region);
@@ -41,27 +61,39 @@ if (typedCommand.toLowerCase()==="concert-this"){
     console.log(response.data[i].venue.city);
     console.log(moment(response.data[i].datetime).format('MM DD Y'));
     };
+  }).catch(function(error){
+    console.log(error);
   });
 }
 
 // Spotify functionality
 else if (typedCommand.toLowerCase()==="spotify-this-song"){
-  console.log("you typed spotify-this-song");
+  const song = process.argv[3];
+  spotify
+  .search({ type: 'track', query: song })
+  .then(function(response) {
+    console.log(response);
+  })
+  .catch(function(err) {
+    console.log(err);
+  });
 }
 
 // OMDB functionality
 else if (typedCommand.toLowerCase()==="movie-this"){
   const movie = process.argv[3];
   const queryURL = `http://www.omdbapi.com/?apikey=${keys.omdb.key}&t=${movie}`;
-  console.log(queryURL);
 
   axios({
   method:'get',
   url:queryURL,
   })
   .then(function(response){
-    
-      console.log("Movie Title: "+response.data.Title);
+      if (!response.data[0]){
+        console.log("\nSorry, no results.\n")
+        process.exit();
+      };
+      console.log("\nMovie Title: "+response.data.Title);
       console.log("Release year: "+response.data.Year);
       console.log("IMDB rating: "+response.data.imdbRating);
 
@@ -87,6 +119,8 @@ else if (typedCommand.toLowerCase()==="movie-this"){
       console.log("Plot of the movie: "+response.data.Plot);
       console.log("Actors in the movie: "+response.data.Actors);
     
+  }).catch(function(error){
+    console.log(error);
   });
 }
 
