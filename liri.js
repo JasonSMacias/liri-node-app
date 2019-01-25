@@ -20,9 +20,12 @@ const spotify = new Spotify(keys.spotify);
 // secret: keys.spotify.secret
 // });
 
-// arguments command variable, this should produce a hyphen-separated variable if spaces are entered, or if hyphens are used(since it won't be split in that case)
-const typedCommand = process.argv[2];
-console.log(typedCommand+" is the typed command");
+// putting process.argv into a variable, because it will have to be chaged to do-what-it-says
+let cliInput = process.argv;
+
+let typedCommand = cliInput[2];
+
+
 
 // checking to see if someting was entered in command and search term arguments, if not let user know and exit.
 if (!process.argv[2]){
@@ -30,16 +33,19 @@ if (!process.argv[2]){
   process.exit(1);
 };
 
-if (!process.argv[3]){
-  console.log("Please enter a search term.");
-  process.exit(1);
-};
+// setting function to contain all if statements, so it can be called if do-what-it-says is entered
+
+const mainFunction = function(){
 
 // Concert this functionality
 if (typedCommand.toLowerCase()==="concert-this"){
 
   // setting search url
-  const artist = process.argv[3];
+  const artist = cliInput[3];
+    if (!artist){
+      console.log("Please enter a search term for concert-this.");
+      process.exit(1);
+    };
   console.log(artist);
   const queryURL = "https://rest.bandsintown.com/artists/" + artist + "/events?app_id=codingbootcamp";
 
@@ -68,7 +74,12 @@ if (typedCommand.toLowerCase()==="concert-this"){
 
 // Spotify functionality
 else if (typedCommand.toLowerCase()==="spotify-this-song"){
-  const song = process.argv[3];
+    let song = "sign ace of base";
+    
+  if (cliInput[3]){
+    song = cliInput[3];
+  };
+  
   spotify
   .search({ type: 'track', query: song, limit: 1 })
   .then(function(response) {
@@ -86,7 +97,11 @@ else if (typedCommand.toLowerCase()==="spotify-this-song"){
 
 // OMDB functionality
 else if (typedCommand.toLowerCase()==="movie-this"){
-  const movie = process.argv[3];
+  let movie = "Mr. Nobody";
+  if (process.argv[3]){
+  movie = process.argv[3];
+  };
+
   const queryURL = `http://www.omdbapi.com/?apikey=${keys.omdb.key}&t=${movie}`;
 
   axios({
@@ -94,36 +109,37 @@ else if (typedCommand.toLowerCase()==="movie-this"){
   url:queryURL,
   })
   .then(function(response){
-      if (!response.data[0]){
-        console.log("\nSorry, no results.\n")
-        process.exit();
-      };
-      console.log("\nMovie Title: "+response.data.Title);
-      console.log("Release year: "+response.data.Year);
-      console.log("IMDB rating: "+response.data.imdbRating);
+    if (!response.data.Title){
+      // in case the search returns no results, to avoid undefined problems
+      console.log("Sorry, no results for that search.");
+      process.exit(1);
+    };
+    console.log("\nMovie Title: "+response.data.Title);
+    console.log("Release year: "+response.data.Year);
+    console.log("IMDB rating: "+response.data.imdbRating);
 
-      // loops to check if a Rotten Tomatoes rating exists, and then to console log the proper spot in the array
-      let rottenPlace = 0;
-      let hasRotten = false;
-      for (i=0; i < response.data.Ratings.length; i++){
-        if (response.data.Ratings[i].Source==="Rotten Tomatoes"){
-          rottenPlace = i;
-          hasRotten = true;
-          // console.log("has");
-        };
+    // loops to check if a Rotten Tomatoes rating exists, and then to console log the proper spot in the array
+    let rottenPlace = 0;
+    let hasRotten = false;
+    for (i=0; i < response.data.Ratings.length; i++){
+      if (response.data.Ratings[i].Source==="Rotten Tomatoes"){
+        rottenPlace = i;
+        hasRotten = true;
+        // console.log("has");
       };
-      if (hasRotten === true){
-        console.log("Rotten Tomatoes rating: "+ response.data.Ratings[rottenPlace].Value);
-      }
-      else {
-        console.log("Rotten Tomatoes rating: None available");
-      };
+    };
+    if (hasRotten === true){
+      console.log("Rotten Tomatoes rating: "+ response.data.Ratings[rottenPlace].Value);
+    }
+    else {
+      console.log("Rotten Tomatoes rating: None available");
+    };
 
-      console.log("Where movie was produced: "+response.data.Country);
-      console.log("Language of the movie: "+response.data.Language);
-      console.log("Plot of the movie: "+response.data.Plot);
-      console.log("Actors in the movie: "+response.data.Actors);
-    
+    console.log("Where movie was produced: "+response.data.Country);
+    console.log("Language of the movie: "+response.data.Language);
+    console.log("Plot of the movie: "+response.data.Plot);
+    console.log("Actors in the movie: "+response.data.Actors);
+  
   }).catch(function(error){
     console.log(error);
   });
@@ -131,10 +147,32 @@ else if (typedCommand.toLowerCase()==="movie-this"){
 
 // do what the file says functionality
 else if (typedCommand.toLowerCase()==="do-what-it-says"){
-  console.log("you typed do-what-it-says");
+  // Lifted this part from class activity, pretty much
+  const fs = require("fs");
+  fs.readFile("random.txt", "utf8", function(error, data) {
+  
+  if (error) {
+    return console.log(error);
+  }
+
+  console.log(data);
+  const dataArray = data.split(",");
+  console.log(dataArray);
+  typedCommandArray = ["filler", "filler"];
+  typedCommandArray.push(dataArray[0], dataArray[1]);
+  console.log(typedCommandArray);
+  typedCommand = typedCommandArray[2];
+  console.log(typedCommand);
+  cliInput = typedCommandArray;
+  console.log(cliInput[3]);
+  mainFunction();
+
+});
 }
 
 else {
   console.log('please use one of these four valid arguments: "concert-this" "spotify-this-song" "movie-this" or "do-what-it-says" followed by your search term.');
 };
 
+};
+mainFunction();
